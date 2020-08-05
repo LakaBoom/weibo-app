@@ -19,7 +19,7 @@ const CommentsList = ({ id }) => {
 
     useEffect(() => {
         handleInfiniteOnLoad()
-    }, [])
+    }, [dispatch, id, page])
 
     const loadMore = page * COMMENT_PAGESIZE < total && (
         <div className={style.loadMore}>
