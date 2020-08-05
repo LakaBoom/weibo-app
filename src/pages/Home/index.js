@@ -1,81 +1,59 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useDispatch, useMappedState } from 'redux-react-hook';
 import { getHomeTimeLine } from '../../actions/timeline';
-import moment from 'moment';
-import { Card } from 'antd';
-import { RetweetOutlined, MessageOutlined, LikeOutlined } from '@ant-design/icons';
+import Post from '../components/Post';
+import CommentsList from '../components/CommentsList';
+import { Row, Affix } from 'antd';
+import { Link } from 'react-router-dom';
+import { UserOutlined, EditOutlined } from '@ant-design/icons';
+import InfiniteScroll from 'react-infinite-scroller';
 import style from './index.module.scss';
+import { LOGIN_URL } from '../../constants';
 
 const mapStateTimeline = state => state.timeline;
 
-const getPostTitle = (user, created_at, source) => (
-    <div className={style.user}>
-        <img src={user.profile_image_url} alt={user.profile_image}
-            className={style.avatar}
-        />
-        <div className={style.userInfo}>
-            <div>{user.screen_name}</div>
-            <div className={style.extra}>
-                {moment(created_at).fromNow()} from <span dangerouslySetInnerHTML={{ __html: source }} />
-            </div>
-        </div>
-    </div>
-)
-
 const Home = () => {
     const dispatch = useDispatch();
-    const { home = [] } = useMappedState(mapStateTimeline);
+    const { home: { posts, page }, current } = useMappedState(mapStateTimeline);
 
-    useEffect(() => {
-        dispatch(getHomeTimeLine());
-    }, [dispatch]);
-
+    const handleInfinitOnLoad = () => {
+        dispatch(getHomeTimeLine({ page: page + 1 }));
+    }
     return (
         <div className={style.container}>
-            {
-                home.map(({text, user, created_at, source, pic_urls, comments_count, attitudes_count, reposts_count }) => (
-                    <Card
-                        key={Math.random()}
-                        className={style.post}
-                        bordered={false}
-                        hoverable
-                        title={getPostTitle(user, created_at, source)}
-                        actions={[
-                            <div>
-                                <RetweetOutlined key="repost" />
-                                <span>{reposts_count || 'Share'}</span>
-                            </div>,
-                            <div>
-                                <LikeOutlined key="like" />
-                                <span>{attitudes_count || 'Like'}</span>
-                            </div>,
-                            <div>
-                                <MessageOutlined key="comment" />
-                                <span>{comments_count || 'Comment'}</span>
-                            </div>
-                        ]}
-                    >
-
-                        <div className={style.content}>
-                            <div className={style.text}>
-                                {text}
-                            </div>
-                            <ul className={style.images}>
-                                {
-                                    pic_urls.map(({ thumbnail_pic }) => (
-                                        <li key={thumbnail_pic} className={style.imgWrapper}>
-                                            <div className={style.imgContainer}>
-                                                <img src={thumbnail_pic} alt={thumbnail_pic} />
-                                            </div>
-
-                                        </li>
-                                    ))
-                                }
-                            </ul>
-                        </div>
-                    </Card>
-                ))
-            }
+            <Affix offsetTop={0}>
+                <Row
+                    className={style.appbar}
+                    justify="space-between"
+                    align="middle"
+                >
+                    <a href={LOGIN_URL}><UserOutlined className={style.icon} /></a>
+                    <div className={style.appTitle}>Weibo App</div>
+                    <Link to="/new"><EditOutlined className={style.icon} /></Link>
+                </Row>
+            </Affix>
+            <InfiniteScroll
+                initialLoad
+                pageStart={1}
+                loadMore={handleInfinitOnLoad}
+                hasMore={true}
+            >
+                {
+                    posts.map(({ id, ...rest }) => (
+                        <>
+                            <Post
+                                key={Math.random()}
+                                id={id}
+                                isCurrent={current === id}
+                                {...rest} />
+                            {
+                                current === id &&
+                                <CommentsList id={current}/>
+                            }
+                        </>
+                    ))
+                }
+            </InfiniteScroll>
         </div>
     )
 }

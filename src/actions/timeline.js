@@ -1,12 +1,24 @@
 import * as api from '../api/timeline';
-import { GET_HOME_TIMELINE } from '../constants/actions';
+import { GET_HOME_TIMELINE, SET_CURRENT_POST } from '../constants/actions';
+import { resetComments } from './comments';
 
-export function getHomeTimeLine(payload={}){
-    return async (dispatch)=>{
-        const result = await api.getHomeTimeLine(payload);
+export function getHomeTimeLine(params = {}) {
+    return async (dispatch) => {
+        const result = await api.getHomeTimeLine(params);
         dispatch({
-            type:GET_HOME_TIMELINE,
-            payload:result
+            type: GET_HOME_TIMELINE,
+            payload: result,
+            params
         })
+    }
+}
+
+export function setCurrentPost(payload) {
+    return async (dispatch) => {
+        await dispatch(resetComments());
+        dispatch({
+            type: SET_CURRENT_POST,
+            payload,
+        });
     }
 }
