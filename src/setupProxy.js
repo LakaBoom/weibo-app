@@ -4,7 +4,7 @@ module.exports = function (app){
     app.use(
         '/proxy',
         createProxyMiddleware({
-            target:"http://mock.don.red/weibo",
+            target:"https://api.weibo.com",
             pathRewrite:{'/proxy':'/'},
             changeOrigin:true
         })

@@ -1,4 +1,5 @@
 export const ACCESS_TOKEN_KEY = 'weibo_app_access_token';
+export const USER_ID = 'weibo_app_user_id';
 
 export const APP_KEY = "900763234";
 export const APP_SECRET = "7e3a844f94b35f70f0538797f12a7056";

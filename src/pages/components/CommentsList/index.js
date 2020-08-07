@@ -1,12 +1,14 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useDispatch, useMappedState } from 'redux-react-hook';
-import { List, Avatar, Card, Button, Row, Col, Input } from 'antd';
+import { List, Avatar, Card, Button, Row, Col, Input, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
-import { getComments, createComment } from 'actions/comments';
-import { COMMENT_PAGESIZE } from 'constants/index';
+import { getComments, createComment, deleteComment } from 'actions/comments';
+import { COMMENT_PAGESIZE, USER_ID } from 'constants/index';
 import style from './index.module.scss';
 
 const mapStateComments = state => state.comments;
+const { confirm }= Modal;
 
 const CommentsList = ({ id }) => {
     const dispatch = useDispatch();
@@ -19,7 +21,7 @@ const CommentsList = ({ id }) => {
 
     useEffect(() => {
         handleInfiniteOnLoad()
-    }, [dispatch, id, page])
+    }, []);
 
     const loadMore = page * COMMENT_PAGESIZE < total && (
         <div className={style.loadMore}>
@@ -34,6 +36,24 @@ const CommentsList = ({ id }) => {
         dispatch(createComment(param, true));
         setVaule('');
     }
+
+    const handleDeleteComment = (cid)=>{
+        let param = new URLSearchParams();
+        param.append('cid', cid);
+        confirm({
+            title:'Warning',
+            icon:<ExclamationCircleOutlined/>,
+            content:'Are you sure delete this comment?',
+            okText:'Confirm',
+            cancelText:'Cancel',
+            onOkay:(e)=>{
+                dispatch(deleteComment(param))
+            }
+        })
+       
+    } 
+
+    const userId = localStorage.getItem(USER_ID);
     return (
         <Card className="commentsList">
             <Row>
@@ -48,7 +68,10 @@ const CommentsList = ({ id }) => {
                 loadMore={loadMore}
                 dataSource={comments}
                 renderItem={item => (
-                    <List.Item key={item.id}>
+                    <List.Item 
+                    key={item.id}
+                    actions={ userId === item.user.idstr ? [<a href="!#" key="list-loadmore-delete" onClick = {()=>handleDeleteComment(id)}>delete</a>] : []}
+                    >
                         <List.Item.Meta
                             avatar={
                                 <Avatar src={item.user.avatar_hd} />
